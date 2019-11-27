@@ -1,3 +1,6 @@
+* R scripts for sample calculation of
+"Flexible Approximate Bayes", FAB
+
 * Chi_square_ln_odds_ratio.r is an illustration of posterior interval
 and point estimates for the squared ln(OR). The prior on ln(OR)^2 is
 assumed to be the squared normal N(0, s0), that is the scaled
