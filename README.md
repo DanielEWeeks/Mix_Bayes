@@ -5,9 +5,9 @@
 and point estimates for the squared ln(OR). The prior on ln(OR)^2 is
 assumed to be the squared normal N(0, s0), that is the scaled
 chi-square, s0 \times X, X ~ 1 df chi square or
-Gamma(shape=0.5, scale=(2*s0)).  L population values of ln(OR)^2
+Gamma(shape = 0.5, scale = 2s0).  L population values of ln(OR)^2
 are generated from the prior distribution as 
-rgamma(L, shape=0.5, scale=(2*s0)), binomial samples are taken, 
+rgamma(L, shape = 0.5, scale = (2*s0)), binomial samples are taken, 
 and L chi-square statistics for testing H0: ln(OR)=0 are computed.
 The interval and the point estimates are constructed via FAB for the
 largest of the L statistics.
