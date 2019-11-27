@@ -6,7 +6,7 @@ Gamma(shape=0.5, scale=(2*s0)).  L population values of ln(OR)^2
 are generated from the prior distribution as 
 rgamma(L, shape=0.5, scale=(2*s0)), binomial samples are taken, 
 and L chi-square statistics for testing H0: ln(OR)=0 are computed.
-The interval and the point estimates are constructed via FAD for the
+The interval and the point estimates are constructed via FAB for the
 largest of the L statistics.
 
 * Wakefield.equivalence.check.r is an illustration of posterior
