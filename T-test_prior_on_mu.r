@@ -1,8 +1,11 @@
-# R CMD BATCH --vanilla --slave --no-timing '--args  s0=0.5 N1=20 N2=30 mx=1000' S.prior.mu.r /dev/null &
+# Ilustration of FAB via simulated two-sample multiple T-tests with selection of the largest T-statistic
+
+# Possible command line supplying script parameters:
+# R CMD BATCH --vanilla --slave --no-timing '--args  s0=0.5 N1=20 N2=30 mx=1000' T-test_prior_on_mu.r /dev/null &
 library(actuar)
 library(LearnBayes)
 
-#default values
+# default values
 mx <- 2500 # number of T-tests
 N1 <- 50 # sample size, group 1
 N2 <- 70 # sample size, group 2
@@ -102,4 +105,3 @@ plot(th.t, th.e)
 #plot(log(shft+th.t), log(shft+selected.mu))
 #plot(log(shft+mean.est), log(shft+selected.mu))
 #plot(log(shft+th.t), log(shft+th.e))
-
