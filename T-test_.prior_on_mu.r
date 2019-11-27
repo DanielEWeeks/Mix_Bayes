@@ -14,7 +14,7 @@ if(length(args) > 0) {
     eval(parse(text=args[[i]]))
   }
 }
-#
+# two-sample T-test
 Sim.Ttest <- function(mu, Sigma, n1, n2, tails=1) {
   y1 = rnorm(n1, mean = mu, sd = Sigma)
   y2 = rnorm(n2, mean = 0, sd = Sigma)
@@ -26,13 +26,14 @@ Sim.Ttest <- function(mu, Sigma, n1, n2, tails=1) {
   c(t.stat, svr, mean.diff)
 }
 #
-N = 1/(1/N1 + 1/N2); sN = sqrt(N) # sample size used to compute each T
+N = 1/(1/N1 + 1/N2); sN = sqrt(N) # sample size used to compute each T-statistic
 df.t = N1+N2-2
 m0 = 0 # prior for mu ~ N(m0, s0)
 sd.s0 = sqrt(s0)
 #
 mean.est <- zz <- th.t <-th.e <- selected.mu <- rep(0, B)
 trunc <- 0.9999; stp = 0.01
+# assume normal prior for mu
 px <- discretize(pnorm(x, mean=m0, sd=sd.s0),
                  method = "upper",
                  from = qnorm(1-trunc, mean=m0, sd=sd.s0),
