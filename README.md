@@ -4,7 +4,7 @@
 * Chi_square_ln_odds_ratio.r is an illustration of posterior interval
 and point estimates for the squared ln(OR). The prior on ln(OR)^2 is
 assumed to be the squared normal N(0, s0), that is the scaled
-chi-square, s0*X, X ~ 1 df chi square or
+chi-square, s0 \times X, X ~ 1 df chi square or
 Gamma(shape=0.5, scale=(2*s0)).  L population values of ln(OR)^2
 are generated from the prior distribution as 
 rgamma(L, shape=0.5, scale=(2*s0)), binomial samples are taken, 
