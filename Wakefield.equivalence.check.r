@@ -37,13 +37,13 @@ theta = log((y11*y22) / (y12*y21))
 Sgms = sqrt( N * (1/y11 + 1/y12 + 1/y21 + 1/y22) )
 Z = theta / sqrt(V)
 delta = Z * Sgms / sN
-pmu1 <- delta * s00/(s00 + Sgms^2) # conj post mean in the script
+pmu1 <- delta * s00/(s00 + Sgms^2) # posterior mean
 Wak.Post.Mean <- theta * R  # post mean in Wakefield's notation
 Pst <- fu1(Z, sN*fud/Sgms, px)
-mb.Mean <- sum(Pst * fud) # Mix Bayes posterior mean
+mb.Mean <- sum(Pst * fud) # FAB posterior mean
 cat(pmu1, Wak.Post.Mean, mb.Mean, "\n")
-mb.std <- sqrt(sum(Pst * (fud -  mb.Mean)^2)) # Mix Bayes posterior std
-sp1 <- sqrt(Sgms^2 * (s00 / (s00 + Sgms^2)) / N ) # conj post std in the script
-sp2 <- sqrt(Sgms^2 * s0/(s0 + (Sgms/sN)^2) / N ) # alternative way, conj post var in the script
-Wak.Post.Std <- sqrt(V*R) # post std in Wakefield's notation
+mb.std <- sqrt(sum(Pst * (fud -  mb.Mean)^2)) # FAB posterior standard deviation
+sp1 <- sqrt(Sgms^2 * (s00 / (s00 + Sgms^2)) / N ) # Wakefield's posterior standard deviation
+sp2 <- sqrt(Sgms^2 * s0/(s0 + (Sgms/sN)^2) / N ) # alternative expression for posterior variance
+Wak.Post.Std <- sqrt(V*R) # posterior standard deviation in Wakefield's notation
 cat(sp1, sp2, Wak.Post.Std, mb.std, "\n")
