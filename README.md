@@ -16,7 +16,7 @@ largest of the L statistics.
 computation for ln(OR) using FAB and ABF. Normal prior is assumed,
 therefore the two methods are equivalent here.
 
-* T-test.r is an ilustration of FAB via simulated two-sample multiple
+* T-test.r is an illustration of FAB via simulated two-sample multiple
 T-tests with selection of the largest T-statistic.
 
 * F-test.r is an illustration of FAB via simulated F-tests, assuming the
