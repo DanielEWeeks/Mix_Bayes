@@ -1,5 +1,4 @@
-# Ilustration of FAB via simulated two-sample multiple T-tests with selection of the largest T-statisticv3: changed Sigma <
-
+# Ilustration of FAB via simulated two-sample multiple T-tests with selection of the largest T-statistic
 library(actuar)
 library(LearnBayes)
 
