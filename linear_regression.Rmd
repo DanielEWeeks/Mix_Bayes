@@ -1,0 +1,200 @@
+---
+title: "Bayesian weighting of linear regression effect size"
+author: "Daniel E. Weeks"
+date: "`r format(Sys.time(), '%B %d, %Y, %R')`"
+header-includes:
+- \usepackage{pdflscape}
+- \newcommand{\blandscape}{\begin{landscape}}
+- \newcommand{\elandscape}{\end{landscape}}
+output:
+  html_document:
+    df_print: paged
+    toc: true
+    number_sections: true
+    toc_depth: '3'
+    code_folding: show
+  pdf_document:
+    toc: true
+    number_sections: true
+    toc_depth: 3
+#   md_extensions: +raw_attribute
+---
+
+```{r,echo=FALSE,message=FALSE,warning=FALSE}
+require(knitr)
+# Set so that long lines in R will be wrapped:
+opts_chunk$set(tidy.opts=list(width.cutoff=80),tidy=TRUE)
+```
+
+```{r,echo=FALSE}
+# In the event of a crash, save the working space on exit:
+save_all <- function() {
+  save.image("recover.RData")
+}
+options(error = save_all)
+```
+
+
+# Load Libraries
+
+```{r load_libraries,message=FALSE}
+library(tidyverse)
+library(tidylog)
+library(actuar)
+library(LearnBayes)
+library(broom)
+```
+
+# Input directory and files 
+
+```{r}
+# Print the working directory
+getwd()
+```
+The input files used in this analysis are ... and can be found in ... 
+
+# Analysis
+
+```
+Estimate Std. Error t value
+0.288123   0.212662   1.355
+
+Chisq Df Pr(>Chisq)
+1.8356  1     0.1755
+```
+
+```{r}
+x <- rnorm(3072)
+y <- 0.2881*x + rnorm(3072,sd = 5)
+m1 <- lm(y~x)
+summary(m1)
+a <- tidy(m1)
+a$statistic[2]
+2*(pt(a$statistic[2], df=3070-2-1, lower.tail = FALSE))
+```
+
+
+```{r}
+pchisq(1.8356, 1, lower.tail = FALSE)
+```
+
+```{r}
+# Illustration of FAB via simulated multiple t-tests from linear regression with selection of the largest T-statistic
+
+L <- 5000 # number of regressions
+N <- 3072
+sN = sqrt(N) # sample size used to compute each T
+sd <- 5
+s0 <- 0.5^2 # prior variance for the distribution of the true difference (mu)
+sd.s0 = sqrt(s0)
+df.t = N - 2 - 1
+m0 = 0 # prior for mu ~ N(m0, s0)
+Cover = 0.95 # target coverage
+trunc <- 0.99999
+sim.lm <- function(beta=0.2881, N=3072, sd=5) {
+  x <- rnorm(N)
+  y <- beta*x + rnorm(N,sd = sd)
+  m1 <- lm(y~x)
+  sd.y <- summary(m1)$sigma
+  var.x <- var(x)
+  var.y <- var(y)
+  a <- tidy(m1)
+  beta.hat <- a[2,]$estimate
+  var.e <- var.y - (beta.hat^2)*var.x
+  sd.ratio <- sqrt(var.x)/sqrt(var.e)
+  unlist(c(a[2,c(4,3,2,5)],var.y=var.y, var.x=var.x, var.e=var.e,sd.ratio=sd.ratio))
+}
+#
+# Density of a non-central t
+fy.T <- function(z, df.t, nc) { dt(-z, df=df.t, ncp = (-nc)) }
+# Compute the vector of posterior probabilities for the noncentrality parameter
+Post.tab.T <- function(z, df.t, nc, b) {
+  # Input
+  # z: observed statistic
+  # df.t: degrees of freedom
+  # nc: non-centrality
+  # b: prior probabilities
+  nn = length(b)
+  dn = fy.T(z, df.t, nc) %*% b
+  pst = rep(0, nn)
+  for(i in 1:nn) { pst[i] = fy.T(z, df.t, nc[i])*b[i] / dn }
+  pst
+}
+# Construct histogram of posteriors
+stp <- 0.002
+px <- discretize(pnorm(x, mean=m0, sd=sd.s0),
+                 method = "round",
+                 from = qnorm(1-trunc, mean=m0, sd=sd.s0),
+                 to = qnorm(trunc, mean=m0, sd=sd.s0), step = stp)
+# Normalize to sum to one
+px <- px/sum(px)
+hist(px)
+Num.Bins <- length(px)
+cat(Num.Bins,"\n")
+```
+
+```{r}
+# Vector of means mu_i
+fud <- seq(from=qnorm(1-trunc,mean=m0, sd=sd.s0), to=qnorm(trunc, mean=m0, sd=sd.s0)-stp, by=stp)
+Mu <- rnorm(L, mean=m0, sd=sd.s0)
+# Mu <- runif(L, min=0, max=1)
+Sigma <- runif(L, s0-s0/2, s0+s0/2)
+MoS <- Mu / Sigma
+tmp.stat.mx <- c(-Inf, 1, 0)
+jmx <- 1
+# This assumes the simulated t statistic is positive
+for(j in 1:L) {
+    # Simulate a t statistic
+    tmp.stat <- sim.lm(Mu[j], N, sd)
+    if(tmp.stat[1] > tmp.stat.mx[1]) { tmp.stat.mx <- tmp.stat; jmx <- j }
+}
+# Observed maximum t statistic
+t.stat <- as.numeric(tmp.stat.mx[1])
+sigma.stat <- as.numeric(tmp.stat.mx[2])
+sd.ratio <- as.numeric(tmp.stat.mx["sd.ratio"])
+mean.diff <- as.numeric(tmp.stat.mx[3])
+Mu.over.Sigma <- MoS[jmx]
+Sigma.mx <-  Sigma[jmx]
+selected.mu <- Mu[jmx]
+# Non-centrality parameters
+# delta_i = sqrt(N)* mu_i/sigma.stat
+fdn <-  (fud*sN)*sd.ratio
+# Compute posterior probabilities of the non-centrality parameter
+# pst = Pr(delta_i | p-value)
+# Needs observed t statistic (t.stat), degrees of freedom (df.t),
+# non-centrality parameters (fdn), prior probabilities (px)
+pst <- Post.tab.T(t.stat, df.t, fdn, px) #Post.t(t.stat, df.t, fdn, px)
+# E(delta | p-value) = Sum_i { delta_i * Pr(delta_i | p-value)}
+# Posterior mean of the non-centrality
+# E(delta | p-value) = sum(pst*fdn)
+th.e <- (sum(pst*fdn)/sN)/sd.ratio # posterior mean, sigma estimated
+
+# Matrix of means mu_i and their posterior probabilities
+ddist <- cbind(fud, pst)
+# Computes the highest probability interval for a discrete probability distribution
+hpd.set <- discint(ddist, Cover)$set
+mxbL <- hpd.set[1]
+mxbU <- hpd.set[length(hpd.set)]
+# Output:
+# Lower Interval bound
+# Posterior point estimate for mu
+# Upper Interval Bound
+# True mean difference
+cat(mxbL, "<", th.e, "<", mxbU, "; True value:", selected.mu, "\n")
+txt <- paste0(round(mxbL,2), " < ", round(th.e,2), " < ", round(mxbU,2), "; True value: ", round(selected.mu,2),"; beta.hat: ",round(tmp.stat.mx[3],2))
+plot(fud,pst, main=txt,pch=".")
+abline(v=th.e, col="red")
+abline(v=selected.mu, col="green")
+abline(v=mean.diff, col="brown")
+abline(v=mxbL, col="blue",lty=2)
+abline(v=mxbU, col="blue",lty=2)
+
+```
+
+
+# Session Information
+
+```{r}
+sessionInfo()
+```
+
