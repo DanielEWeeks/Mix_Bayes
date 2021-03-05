@@ -38,7 +38,7 @@ Post.tab.T <- function(z, df.t, nc, b) {
   for(i in 1:nn) { pst[i] = fy.T(z, df.t, nc[i])*b[i] / dn }
   pst
 }
-# Construct histogram of posteriors
+# Construct histogram of priors
 stp <- 0.002
 px <- discretize(pnorm(x, mean=m0, sd=sd.s0),
                  method = "round",
@@ -46,7 +46,7 @@ px <- discretize(pnorm(x, mean=m0, sd=sd.s0),
                  to = qnorm(trunc, mean=m0, sd=sd.s0), step = stp)
 # Normalize to sum to one
 px <- px/sum(px)
-hist(px)
+plot(px,type="l")
 Num.Bins <- length(px)
 cat(Num.Bins,"\n")
 # Vector of means mu_i
@@ -56,6 +56,10 @@ Sigma <- runif(L, s0-s0/2, s0+s0/2)
 MoS <- Mu / Sigma
 tmp.stat.mx <- c(-Inf, 1, 0)
 jmx <- 1
+# The test 'f(tmp.stat[1] > tmp.stat.mx[1])'
+# means we are only looking for extreme positive t statistics.
+# But if we were selecting by p-value, we could easily end up
+# with a negative t statistic of large magnitude
 for(j in 1:L) {
     # Simulate a t statistic
     tmp.stat <- Sim.Ttest(Mu[j], Sigma[j], N1, N2)
